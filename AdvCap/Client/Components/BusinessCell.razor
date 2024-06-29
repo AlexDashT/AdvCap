@@ -1,0 +1,145 @@
+﻿@page "/businesscell"
+@inject StateService StateService
+@inject ConfigService ConfigService
+@implements IDisposable
+
+<div class="card mb-3">
+    <div class="card-body">
+        @if (IsUnlocked)
+        {
+            <img src="@BusinessConfig.Image" @onclick="StartWork" class="img-fluid" />
+            <div>@BusinessConfig.Name</div>
+            <div class="progress position-relative">
+                <div class="progress-bar" role="progressbar" style="width: @ProgressPercentage%;" aria-valuenow="@ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                </div>
+                <span class="progress-bar-text">@ProfitText</span>
+            </div>
+            <div class="progress mt-2 position-relative">
+                <div class="progress-bar" role="progressbar" style="width: @AmountProgressPercentage%;" aria-valuenow="@AmountProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                </div>
+                <span class="progress-bar-text">@AmountProgressString</span>
+            </div>
+            <div>Remaining Time: @RemainingTimeString</div>
+            <div>Upgrade Cost: @UpgradeCostString</div>
+            <button class="btn btn-primary mt-2" @onclick="UpgradeBusiness">Upgrade</button>
+        }
+        else
+        {
+            <img src="@BusinessConfig.Image" class="img-fluid" />
+            <div>@BusinessConfig.Name</div>
+            <div>Cost: @UnlockCostString</div>
+            <button class="btn btn-primary mt-2" @onclick="UnlockBusiness">Unlock</button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string BusinessID { get; set; }
+    private BusinessConfig BusinessConfig => ConfigService.GetBusinessConfig(BusinessID);
+    private BusinessState BusinessState => StateService.Businesses[BusinessID];
+    private bool IsUnlocked => BusinessState.Amount > 0;
+    private double UnlockCost => ConfigService.GetBusinessConfig(BusinessID).InitialCost;
+    private string UnlockCostString => MoneyUtil.MoneyToString(UnlockCost);
+    private string ProfitText => MoneyUtil.MoneyToString(BusinessState.Amount * ConfigService.GetBusinessConfig(BusinessID).InitialRevenue);
+    private string UpgradeCostString => MoneyUtil.MoneyToString(CalculateUpgradeCost());
+    private System.Timers.Timer _timer;
+
+    protected override void OnInitialized()
+    {
+        _timer = new System.Timers.Timer(1000);
+        _timer.Elapsed += OnTimerElapsed;
+        _timer.Start();
+    }
+
+    private void OnTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        InvokeAsync(StateService.CheckAndCompleteWork);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UnlockBusiness()
+    {
+        if (StateService.Wallet.Money >= UnlockCost)
+        {
+            StateService.SubtractMoney(UnlockCost);
+            StateService.UnlockBusiness(BusinessID);
+        }
+    }
+
+    private void UpgradeBusiness()
+    {
+        var cost = CalculateUpgradeCost();
+        if (StateService.Wallet.Money >= cost)
+        {
+            StateService.SubtractMoney(cost);
+            StateService.UpgradeBusiness(BusinessID, 1);
+        }
+    }
+
+    private double CalculateUpgradeCost()
+    {
+        var amount = BusinessState.Amount;
+        var initialCost = ConfigService.GetBusinessConfig(BusinessID).InitialCost;
+        var coefficient = ConfigService.GetBusinessConfig(BusinessID).Coefficient;
+        return initialCost * Math.Pow(coefficient, amount);
+    }
+
+    private void StartWork()
+    {
+        StateService.StartWork(BusinessID);
+    }
+
+    private string RemainingTimeString
+    {
+        get
+        {
+            if (BusinessState.IsWorking)
+            {
+                var remainingTime = (BusinessState.WorkTimestamp - DateTime.Now.Ticks) / TimeSpan.TicksPerSecond;
+                return TimeUtil.SecondsToString(remainingTime);
+            }
+            else
+            {
+                var timeToProfit = ConfigService.GetTimeToProfit(BusinessID, BusinessState.Amount);
+                return TimeUtil.SecondsToString(timeToProfit);
+            }
+        }
+    }
+
+    private double ProgressPercentage
+    {
+        get
+        {
+            if (BusinessState.IsWorking)
+            {
+                var totalTime = (BusinessState.WorkTimestamp - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
+                var elapsedTime = (DateTime.Now.Ticks - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
+                return (elapsedTime / totalTime) * 100;
+            }
+            return 0;
+        }
+    }
+
+    private double AmountProgressPercentage
+    {
+        get
+        {
+            var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
+            return ((double)BusinessState.Amount / nextMilestone) * 100;
+        }
+    }
+
+    private string AmountProgressString
+    {
+        get
+        {
+            var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
+            return $"{BusinessState.Amount}/{nextMilestone}";
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}

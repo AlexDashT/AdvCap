@@ -1,0 +1,43 @@
+﻿@page "/"
+@using AdvCap.Client.Components
+@inject ConfigService ConfigService
+@inject StateService StateService
+@implements IAsyncDisposable
+
+<div>
+    <h1>Adventure Capitalist</h1>
+    <div>Money: @StateService.Wallet.MoneyString</div>
+    <div>
+        @foreach (var businessID in ConfigService.Businesses.Keys)
+        {
+            <BusinessCell BusinessID="@businessID" />
+        }
+    </div>
+</div>
+@code {
+    private bool initialized = false;
+
+    protected override void OnInitialized()
+    {
+        StateService.OnChange += StateHasChanged;
+    }
+
+    // private async Task InitializePixi()
+    // {
+    //     if (!initialized)
+    //     {
+    //         await PixiService.InitializePixiAsync();
+    //         initialized = true;
+    //     }
+    // }
+
+    public async ValueTask DisposeAsync()
+    {
+        // if (initialized)
+        // {
+        //     await PixiService.ResizePixiAsync();
+        // }
+
+        StateService.OnChange -= StateHasChanged;
+    }
+}

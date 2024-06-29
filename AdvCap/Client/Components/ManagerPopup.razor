@@ -1,0 +1,35 @@
+﻿@page "/managerpopup"
+@inject StateService StateService
+@inject ConfigService ConfigService
+
+<div>
+    @if (IsUnlocked)
+    {
+        <img src="@ManagerConfig.Image" />
+        <div>@ManagerConfig.Name</div>
+    }
+    else
+    {
+        <img src="@ManagerConfig.Image" />
+        <div>@ManagerConfig.Name</div>
+        <div>Cost: @ManagerConfig.Cost</div>
+        <button @onclick="UnlockManager">Unlock</button>
+    }
+</div>
+
+@code {
+    [Parameter] public string ManagerID { get; set; }
+
+    private ManagerConfig ManagerConfig => ConfigService.GetManagerConfig(ManagerID);
+    private ManagerState ManagerState => StateService.Managers[ManagerID];
+    private bool IsUnlocked => ManagerState.IsUnlocked;
+
+    private void UnlockManager()
+    {
+        if (StateService.Wallet.Money >= ManagerConfig.Cost)
+        {
+            StateService.SubtractMoney(ManagerConfig.Cost);
+            StateService.UnlockManager(ManagerID);
+        }
+    }
+}
