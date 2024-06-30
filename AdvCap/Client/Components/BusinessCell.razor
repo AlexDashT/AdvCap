@@ -22,6 +22,10 @@
             <div>Remaining Time: @RemainingTimeString</div>
             <div>Upgrade Cost: @UpgradeCostString</div>
             <button class="btn btn-primary mt-2" @onclick="UpgradeBusiness">Upgrade</button>
+            @if (!IsManagerHired)
+            {
+                <button class="btn btn-success mt-2" @onclick="OpenManagerPopup">Hire Manager</button>
+            }
         }
         else
         {
@@ -33,6 +37,11 @@
     </div>
 </div>
 
+@if (ShowManagerPopup)
+{
+    <ManagerPopup ManagerID="@ManagerID" OnHire="OnHireManager" OnClose="CloseManagerPopup" />
+}
+
 @code {
     [Parameter] public string BusinessID { get; set; }
     private BusinessConfig BusinessConfig => ConfigService.GetBusinessConfig(BusinessID);
@@ -42,6 +51,9 @@
     private string UnlockCostString => MoneyUtil.MoneyToString(UnlockCost);
     private string ProfitText => MoneyUtil.MoneyToString(BusinessState.Amount * ConfigService.GetBusinessConfig(BusinessID).InitialRevenue);
     private string UpgradeCostString => MoneyUtil.MoneyToString(CalculateUpgradeCost());
+    private bool ShowManagerPopup { get; set; }
+    private string ManagerID => ConfigService.GetManagerIDForBusiness(BusinessID);
+    private bool IsManagerHired => StateService.Managers.ContainsKey(ManagerID) && StateService.Managers[ManagerID].IsUnlocked;
     private System.Timers.Timer _timer;
 
     protected override void OnInitialized()
@@ -136,6 +148,22 @@
             var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
             return $"{BusinessState.Amount}/{nextMilestone}";
         }
+    }
+
+    private void OpenManagerPopup()
+    {
+        ShowManagerPopup = true;
+    }
+
+    private void CloseManagerPopup()
+    {
+        ShowManagerPopup = false;
+    }
+
+    private void OnHireManager()
+    {
+        StateService.HireManager(ManagerID);
+        ShowManagerPopup = false;
     }
 
     public void Dispose()

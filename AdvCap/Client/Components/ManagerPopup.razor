@@ -1,35 +1,44 @@
-﻿@page "/managerpopup"
-@inject StateService StateService
+﻿@inject StateService StateService
 @inject ConfigService ConfigService
-
-<div>
-    @if (IsUnlocked)
-    {
-        <img src="@ManagerConfig.Image" />
-        <div>@ManagerConfig.Name</div>
-    }
-    else
-    {
-        <img src="@ManagerConfig.Image" />
-        <div>@ManagerConfig.Name</div>
-        <div>Cost: @ManagerConfig.Cost</div>
-        <button @onclick="UnlockManager">Unlock</button>
-    }
-</div>
-
 @code {
     [Parameter] public string ManagerID { get; set; }
+    [Parameter] public EventCallback OnHire { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
 
     private ManagerConfig ManagerConfig => ConfigService.GetManagerConfig(ManagerID);
-    private ManagerState ManagerState => StateService.Managers[ManagerID];
-    private bool IsUnlocked => ManagerState.IsUnlocked;
+    private bool CanHire => StateService.Wallet.Money >= ManagerConfig.Cost && !IsManagerHired;
+    private bool IsManagerHired => StateService.Managers.ContainsKey(ManagerID) && StateService.Managers[ManagerID].IsUnlocked;
+    private string HireButtonColor => CanHire ? "btn-primary" : "btn-secondary";
 
-    private void UnlockManager()
+    private void HireManager()
     {
-        if (StateService.Wallet.Money >= ManagerConfig.Cost)
+        if (CanHire)
         {
-            StateService.SubtractMoney(ManagerConfig.Cost);
-            StateService.UnlockManager(ManagerID);
+            StateService.HireManager(ManagerID);
+            OnHire.InvokeAsync(null);
         }
     }
 }
+
+<div class="modal" style="display:block; background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Hire Manager</h5>
+                <button type="button" class="btn-close" @onclick="OnClose"></button>
+            </div>
+            <div class="modal-body">
+                <p>Manager: @ManagerConfig.Name</p>
+                <p>Cost: @MoneyUtil.MoneyToString(ManagerConfig.Cost)</p>
+                @if (IsManagerHired)
+                {
+                    <p>This manager is already hired.</p>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="OnClose">Close</button>
+                <button type="button" class="btn @HireButtonColor" @onclick="HireManager" disabled="@(CanHire ? null : true)">Hire</button>
+            </div>
+        </div>
+    </div>
+</div>

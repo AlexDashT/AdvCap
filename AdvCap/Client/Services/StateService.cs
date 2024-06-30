@@ -34,7 +34,7 @@ public class StateService
         _configService = configService;
         Businesses = new Dictionary<string, BusinessState>();
         Managers = new Dictionary<string, ManagerState>();
-        Wallet = new WalletState { Money = 1000000000 };
+        Wallet = new WalletState { Money = 998 };
 
         InitializeBusinesses();
         InitializeManagers();
@@ -152,7 +152,41 @@ public class StateService
                 business.IsWorking = false;
                 NotifyStateChanged();
             }
+
+            var managerID = GetManagerIDForBusiness(businessID);
+            if (Managers[managerID].IsUnlocked && !business.IsWorking)
+            {
+                StartWork(businessID);
+            }
         }
+    }
+
+    public void HireManager(string managerID)
+    {
+        if (Managers.ContainsKey(managerID) && Wallet.Money >= _configService.GetManagerConfig(managerID).Cost)
+        {
+            SubtractMoney(_configService.GetManagerConfig(managerID).Cost);
+            UnlockManager(managerID);
+
+            var businessID = _configService.GetManagerConfig(managerID).BusinessID;
+            var business = Businesses[businessID];
+            if (!business.IsWorking)
+            {
+                StartWork(businessID);
+            }
+        }
+    }
+
+    public string GetManagerIDForBusiness(string businessID)
+    {
+        foreach (var managerID in _configService.Managers.Keys)
+        {
+            if (_configService.Managers[managerID].BusinessID == businessID)
+            {
+                return managerID;
+            }
+        }
+        return null;
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();

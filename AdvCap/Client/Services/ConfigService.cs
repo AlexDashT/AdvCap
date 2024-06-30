@@ -49,7 +49,7 @@ public class ConfigService
 
         Managers = new Dictionary<string, ManagerConfig>
         {
-            { "manager-0", new ManagerConfig { AutoUnlocked = true, BusinessID = "business-0", Name = "Cabe Johnson", Image = "assets/manager/Cabejohnson.jpg", Cost = 1000 } },
+            { "manager-0", new ManagerConfig { AutoUnlocked = false, BusinessID = "business-0", Name = "Cabe Johnson", Image = "assets/manager/Cabejohnson.jpg", Cost = 1000 } },
             { "manager-1", new ManagerConfig { BusinessID = "business-1", Name = "Perry Black", Image = "assets/manager/Perryblack.jpg", Cost = 15000 } },
             { "manager-2", new ManagerConfig { BusinessID = "business-2", Name = "W.W. Heisenbird", Image = "assets/manager/Heisenberg.jpg", Cost = 100000 } },
             { "manager-3", new ManagerConfig { BusinessID = "business-3", Name = "Mama Sean", Image = "assets/manager/Mama.jpg", Cost = 500000 } },
@@ -134,5 +134,17 @@ public class ConfigService
             }
         }
         return 400; // maximum milestone
+    }
+
+    public string GetManagerIDForBusiness(string businessID)
+    {
+        foreach (var managerID in Managers.Keys)
+        {
+            if (Managers[managerID].BusinessID == businessID)
+            {
+                return managerID;
+            }
+        }
+        return null;
     }
 }
