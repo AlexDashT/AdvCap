@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Microsoft.JSInterop;
+using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 public class BusinessState
 {
@@ -22,24 +25,35 @@ public class WalletState
 
 public class StateService
 {
-    private ConfigService _configService;
+    private readonly IJSRuntime _jsRuntime;
+    private readonly ConfigService _configService;
     public event Action OnChange;
+    private static StateService _instance;
 
     public Dictionary<string, BusinessState> Businesses { get; private set; }
     public Dictionary<string, ManagerState> Managers { get; private set; }
     public WalletState Wallet { get; private set; }
+    public double LastTimestamp { get; private set; }
+    public double OfflineEarnings { get; private set; }
 
-    public StateService(ConfigService configService)
+    public StateService(ConfigService configService, IJSRuntime jsRuntime)
     {
         _configService = configService;
+        _jsRuntime = jsRuntime;
         Businesses = new Dictionary<string, BusinessState>();
         Managers = new Dictionary<string, ManagerState>();
-        Wallet = new WalletState { Money = 998 };
+        Wallet = new WalletState { Money = 100000000000 };
+        _instance = this;
+    }
 
+    public async Task InitializeAsync()
+    {
         InitializeBusinesses();
         InitializeManagers();
         UnlockInitialBusinesses();
         UnlockInitialManagers();
+        await LoadStateAsync();
+        
     }
 
     private void InitializeBusinesses()
@@ -72,6 +86,55 @@ public class StateService
         {
             UnlockManager(initialManagerID);
         }
+    }
+
+    public async Task SaveStateAsync()
+    {
+        var state = new
+        {
+            Businesses,
+            Managers,
+            Wallet,
+            LastTimestamp = DateTime.Now.Ticks
+        };
+
+        var json = JsonSerializer.Serialize(state);
+        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "gameState", json);
+    }
+    [JSInvokable]
+    public static async Task SaveStateOnExit()
+    {
+        if (_instance != null)
+        {
+            await _instance.SaveStateAsync();
+        }
+    }
+
+    public async Task LoadStateAsync()
+    {
+        var json = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "gameState");
+        if (!string.IsNullOrEmpty(json))
+        {
+            var state = JsonSerializer.Deserialize<State>(json);
+            Businesses = state.Businesses;
+            Managers = state.Managers;
+            Wallet = state.Wallet;
+            LastTimestamp = state.LastTimestamp;
+        }
+        else
+        {
+            // Store the initial state if no state is found
+            LastTimestamp = DateTime.Now.Ticks;
+            await SaveStateAsync();
+        }
+    }
+
+    private class State
+    {
+        public Dictionary<string, BusinessState> Businesses { get; set; }
+        public Dictionary<string, ManagerState> Managers { get; set; }
+        public WalletState Wallet { get; set; }
+        public double LastTimestamp { get; set; }
     }
 
     public void UnlockBusiness(string businessID)
@@ -115,7 +178,8 @@ public class StateService
 
     public double CalculateProfit(string businessID)
     {
-        if (!Businesses.ContainsKey(businessID)) return 0;
+        if (!Businesses.ContainsKey(businessID))
+            return 0;
 
         var business = Businesses[businessID];
         var config = _configService.GetBusinessConfig(businessID);
@@ -131,7 +195,8 @@ public class StateService
 
     public void StartWork(string businessID)
     {
-        if (!Businesses.ContainsKey(businessID)) return;
+        if (!Businesses.ContainsKey(businessID))
+            return;
 
         var business = Businesses[businessID];
         business.StartTime = DateTime.Now;
@@ -154,7 +219,7 @@ public class StateService
             }
 
             var managerID = GetManagerIDForBusiness(businessID);
-            if (Managers[managerID].IsUnlocked && !business.IsWorking)
+            if (managerID != null && Managers[managerID].IsUnlocked && !business.IsWorking)
             {
                 StartWork(businessID);
             }
@@ -187,6 +252,47 @@ public class StateService
             }
         }
         return null;
+    }
+
+    private double CalculateOfflineEarnings()
+    {
+        double totalEarnings = 0;
+        double now = DateTime.Now.Ticks;
+        double elapsedSeconds = (now - LastTimestamp) / TimeSpan.TicksPerSecond;
+
+        foreach (var businessID in Businesses.Keys)
+        {
+            var business = Businesses[businessID];
+            if (Managers.ContainsKey(businessID) && Managers[businessID].IsUnlocked)
+            {
+                var timeToProfit = GetTimeToProfit(businessID);
+                double cycles = elapsedSeconds / timeToProfit;
+                totalEarnings += CalculateProfit(businessID) * cycles;
+            }
+            else if (business.IsWorking && now >= business.WorkTimestamp)
+            {
+                totalEarnings += CalculateProfit(businessID);
+            }
+        }
+
+        return totalEarnings;
+    }
+
+    public async Task HandleAppStartAsync()
+    {
+        await LoadStateAsync();
+        OfflineEarnings = CalculateOfflineEarnings();
+        if (OfflineEarnings > 0)
+        {
+            NotifyStateChanged();
+        }
+    }
+
+    public async Task CollectOfflineEarningsAsync()
+    {
+        AddMoney(OfflineEarnings);
+        OfflineEarnings = 0;
+        await SaveStateAsync();
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();

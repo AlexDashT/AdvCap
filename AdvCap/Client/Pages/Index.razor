@@ -2,7 +2,10 @@
 @using AdvCap.Client.Components
 @inject ConfigService ConfigService
 @inject StateService StateService
-@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+
+@implements IDisposable
 
 <div>
     <h1>Adventure Capitalist</h1>
@@ -14,30 +17,28 @@
         }
     </div>
 </div>
+<OfflineEarningsPopup OnCollect="@HandleCollectEarnings" />
+
 @code {
     private bool initialized = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await StateService.InitializeAsync();
+        await StateService.HandleAppStartAsync();
+        await JSRuntime.InvokeVoidAsync("eval", "window.addEventListener('beforeunload', function(event) { DotNet.invokeMethodAsync('AdvCap.Client', 'SaveStateOnExit'); });");
         StateService.OnChange += StateHasChanged;
     }
-
-    // private async Task InitializePixi()
-    // {
-    //     if (!initialized)
-    //     {
-    //         await PixiService.InitializePixiAsync();
-    //         initialized = true;
-    //     }
-    // }
-
-    public async ValueTask DisposeAsync()
+    private async Task HandleCollectEarnings()
     {
-        // if (initialized)
-        // {
-        //     await PixiService.ResizePixiAsync();
-        // }
+        await StateService.CollectOfflineEarningsAsync();
+        StateHasChanged();
+    }
 
+    
+    public void Dispose()
+    {
         StateService.OnChange -= StateHasChanged;
+        StateService.SaveStateAsync().GetAwaiter().GetResult();
     }
 }

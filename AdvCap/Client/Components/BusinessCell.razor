@@ -11,13 +11,13 @@
             <div>@BusinessConfig.Name</div>
             <div class="progress position-relative">
                 <div class="progress-bar" role="progressbar" style="width: @ProgressPercentage%;" aria-valuenow="@ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                    <span class="progress-bar-text">@ProfitText</span>
                 </div>
-                <span class="progress-bar-text">@ProfitText</span>
             </div>
             <div class="progress mt-2 position-relative">
                 <div class="progress-bar" role="progressbar" style="width: @AmountProgressPercentage%;" aria-valuenow="@AmountProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                    <span class="progress-bar-text">@AmountProgressString</span>
                 </div>
-                <span class="progress-bar-text">@AmountProgressString</span>
             </div>
             <div>Remaining Time: @RemainingTimeString</div>
             <div>Upgrade Cost: @UpgradeCostString</div>
@@ -58,15 +58,18 @@
 
     protected override void OnInitialized()
     {
-        _timer = new System.Timers.Timer(1000);
+        _timer = new System.Timers.Timer(1000); // Update every half second
         _timer.Elapsed += OnTimerElapsed;
         _timer.Start();
     }
 
     private void OnTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
     {
-        InvokeAsync(StateService.CheckAndCompleteWork);
-        InvokeAsync(StateHasChanged);
+        InvokeAsync(() =>
+        {
+            StateService.CheckAndCompleteWork();
+            StateHasChanged();
+        });
     }
 
     private void UnlockBusiness()
@@ -103,8 +106,7 @@
 
     private string RemainingTimeString
     {
-        get
-        {
+        get {
             if (BusinessState.IsWorking)
             {
                 var remainingTime = (BusinessState.WorkTimestamp - DateTime.Now.Ticks) / TimeSpan.TicksPerSecond;
@@ -120,11 +122,12 @@
 
     private double ProgressPercentage
     {
-        get
-        {
+        get {
             if (BusinessState.IsWorking)
             {
                 var totalTime = (BusinessState.WorkTimestamp - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
+                if (totalTime == 0)
+                    return 0; // Avoid division by zero
                 var elapsedTime = (DateTime.Now.Ticks - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
                 return (elapsedTime / totalTime) * 100;
             }
@@ -134,8 +137,7 @@
 
     private double AmountProgressPercentage
     {
-        get
-        {
+        get {
             var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
             return ((double)BusinessState.Amount / nextMilestone) * 100;
         }
@@ -143,8 +145,7 @@
 
     private string AmountProgressString
     {
-        get
-        {
+        get {
             var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
             return $"{BusinessState.Amount}/{nextMilestone}";
         }

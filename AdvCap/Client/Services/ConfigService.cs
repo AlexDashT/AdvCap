@@ -147,4 +147,8 @@ public class ConfigService
         }
         return null;
     }
+    public List<string> GetBusinessIDs()
+    {
+        return new List<string>(Businesses.Keys);
+    }
 }
