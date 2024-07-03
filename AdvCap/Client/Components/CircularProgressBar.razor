@@ -1,0 +1,32 @@
+﻿@page "/circularprogressbar"
+@implements IDisposable
+
+<svg viewBox="0 0 36 36" class="circular-chart small">
+    <path class="circle-bg"
+          d="M18 2.0845
+             a 15.9155 15.9155 0 0 1 0 31.831
+             a 15.9155 15.9155 0 0 1 0-31.831"/>
+    <path class="circle"
+          stroke-dasharray="@Progress, 100"
+          d="M18 2.0845
+             a 15.9155 15.9155 0 0 1 0 31.831
+             a 15.9155 15.9155 0 0 1 0-31.831"/>
+    <text x="18" y="20.35" class="percentage">@DisplayText</text>
+</svg>
+
+@code {
+    [Parameter] public double Progress { get; set; }
+    [Parameter] public string DisplayText { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Progress < 0) Progress = 0;
+        if (Progress > 100) Progress = 100;
+    }
+
+    public void Dispose()
+    {
+        
+    }
+
+}

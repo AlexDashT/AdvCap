@@ -1,38 +1,52 @@
 ﻿@page "/businesscell"
-@inject StateService StateService
-@inject ConfigService ConfigService
-@implements IDisposable
-
 <div class="card mb-3">
     <div class="card-body">
         @if (IsUnlocked)
         {
-            <img src="@BusinessConfig.Image" @onclick="StartWork" class="img-fluid" />
-            <div>@BusinessConfig.Name</div>
-            <div class="progress position-relative">
-                <div class="progress-bar" role="progressbar" style="width: @ProgressPercentage%;" aria-valuenow="@ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
-                    <span class="progress-bar-text">@ProfitText</span>
+            <div class="row align-items-center">
+                <div class="col-3 text-center">
+                    <img src="@BusinessConfig.Image" @onclick="StartWork" class="img-fluid" />
+                    <div>@BusinessConfig.Name</div>
+                </div>
+                <div class="col-6">
+                    <!-- Empty column to center align the progress bar -->
+                </div>
+                <div class="col-3">
+                    <div class="progress position-relative">
+                        <div class="progress-bar" role="progressbar" style="width: @ProgressPercentage%;" aria-valuenow="@ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                            <span class="progress-bar-text">@ProfitText</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="progress mt-2 position-relative">
-                <div class="progress-bar" role="progressbar" style="width: @AmountProgressPercentage%;" aria-valuenow="@AmountProgressPercentage" aria-valuemin="0" aria-valuemax="100">
-                    <span class="progress-bar-text">@AmountProgressString</span>
+            <div class="row align-items-center mt-3">
+                <div class="col-6">
+                    <CircularProgressBar Progress="@AmountProgressPercentage" DisplayText="@AmountProgressString" />
+                </div>
+                <div class="col-6 text-end">
+                    <div class="btn-group">
+                        <button class="btn btn-primary mt-2" @onclick="UpgradeBusiness">BUY @UpgradeCostString</button>
+                        @if (!IsManagerHired)
+                        {
+                            <button class="btn btn-success mt-2 ms-2" @onclick="OpenManagerPopup">Hire Manager</button>
+                        }
+                        <div class="btn btn-secondary mt-2 ms-2" disabled>@RemainingTimeString</div>
+                    </div>
                 </div>
             </div>
-            <div>Remaining Time: @RemainingTimeString</div>
-            <div>Upgrade Cost: @UpgradeCostString</div>
-            <button class="btn btn-primary mt-2" @onclick="UpgradeBusiness">Upgrade</button>
-            @if (!IsManagerHired)
-            {
-                <button class="btn btn-success mt-2" @onclick="OpenManagerPopup">Hire Manager</button>
-            }
         }
         else
         {
-            <img src="@BusinessConfig.Image" class="img-fluid" />
-            <div>@BusinessConfig.Name</div>
-            <div>Cost: @UnlockCostString</div>
-            <button class="btn btn-primary mt-2" @onclick="UnlockBusiness">Unlock</button>
+            <div class="row align-items-center">
+                <div class="col-3 text-center">
+                    <img src="@BusinessConfig.Image" class="img-fluid" />
+                    <div>@BusinessConfig.Name</div>
+                </div>
+                <div class="col-9">
+                    <div>Cost: @UnlockCostString</div>
+                    <button class="btn btn-primary mt-2" @onclick="UnlockBusiness">Unlock</button>
+                </div>
+            </div>
         }
     </div>
 </div>
@@ -40,135 +54,4 @@
 @if (ShowManagerPopup)
 {
     <ManagerPopup ManagerID="@ManagerID" OnHire="OnHireManager" OnClose="CloseManagerPopup" />
-}
-
-@code {
-    [Parameter] public string BusinessID { get; set; }
-    private BusinessConfig BusinessConfig => ConfigService.GetBusinessConfig(BusinessID);
-    private BusinessState BusinessState => StateService.Businesses[BusinessID];
-    private bool IsUnlocked => BusinessState.Amount > 0;
-    private double UnlockCost => ConfigService.GetBusinessConfig(BusinessID).InitialCost;
-    private string UnlockCostString => MoneyUtil.MoneyToString(UnlockCost);
-    private string ProfitText => MoneyUtil.MoneyToString(BusinessState.Amount * ConfigService.GetBusinessConfig(BusinessID).InitialRevenue);
-    private string UpgradeCostString => MoneyUtil.MoneyToString(CalculateUpgradeCost());
-    private bool ShowManagerPopup { get; set; }
-    private string ManagerID => ConfigService.GetManagerIDForBusiness(BusinessID);
-    private bool IsManagerHired => StateService.Managers.ContainsKey(ManagerID) && StateService.Managers[ManagerID].IsUnlocked;
-    private System.Timers.Timer _timer;
-
-    protected override void OnInitialized()
-    {
-        _timer = new System.Timers.Timer(1000); // Update every half second
-        _timer.Elapsed += OnTimerElapsed;
-        _timer.Start();
-    }
-
-    private void OnTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
-    {
-        InvokeAsync(() =>
-        {
-            StateService.CheckAndCompleteWork();
-            StateHasChanged();
-        });
-    }
-
-    private void UnlockBusiness()
-    {
-        if (StateService.Wallet.Money >= UnlockCost)
-        {
-            StateService.SubtractMoney(UnlockCost);
-            StateService.UnlockBusiness(BusinessID);
-        }
-    }
-
-    private void UpgradeBusiness()
-    {
-        var cost = CalculateUpgradeCost();
-        if (StateService.Wallet.Money >= cost)
-        {
-            StateService.SubtractMoney(cost);
-            StateService.UpgradeBusiness(BusinessID, 1);
-        }
-    }
-
-    private double CalculateUpgradeCost()
-    {
-        var amount = BusinessState.Amount;
-        var initialCost = ConfigService.GetBusinessConfig(BusinessID).InitialCost;
-        var coefficient = ConfigService.GetBusinessConfig(BusinessID).Coefficient;
-        return initialCost * Math.Pow(coefficient, amount);
-    }
-
-    private void StartWork()
-    {
-        StateService.StartWork(BusinessID);
-    }
-
-    private string RemainingTimeString
-    {
-        get {
-            if (BusinessState.IsWorking)
-            {
-                var remainingTime = (BusinessState.WorkTimestamp - DateTime.Now.Ticks) / TimeSpan.TicksPerSecond;
-                return TimeUtil.SecondsToString(remainingTime);
-            }
-            else
-            {
-                var timeToProfit = ConfigService.GetTimeToProfit(BusinessID, BusinessState.Amount);
-                return TimeUtil.SecondsToString(timeToProfit);
-            }
-        }
-    }
-
-    private double ProgressPercentage
-    {
-        get {
-            if (BusinessState.IsWorking)
-            {
-                var totalTime = (BusinessState.WorkTimestamp - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
-                if (totalTime == 0)
-                    return 0; // Avoid division by zero
-                var elapsedTime = (DateTime.Now.Ticks - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
-                return (elapsedTime / totalTime) * 100;
-            }
-            return 0;
-        }
-    }
-
-    private double AmountProgressPercentage
-    {
-        get {
-            var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
-            return ((double)BusinessState.Amount / nextMilestone) * 100;
-        }
-    }
-
-    private string AmountProgressString
-    {
-        get {
-            var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
-            return $"{BusinessState.Amount}/{nextMilestone}";
-        }
-    }
-
-    private void OpenManagerPopup()
-    {
-        ShowManagerPopup = true;
-    }
-
-    private void CloseManagerPopup()
-    {
-        ShowManagerPopup = false;
-    }
-
-    private void OnHireManager()
-    {
-        StateService.HireManager(ManagerID);
-        ShowManagerPopup = false;
-    }
-
-    public void Dispose()
-    {
-        _timer?.Dispose();
-    }
 }

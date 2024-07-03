@@ -1,0 +1,140 @@
+﻿using System.Timers;
+using Microsoft.AspNetCore.Components;
+
+namespace AdvCap.Client.Components;
+
+public partial class BusinessCell : IDisposable
+{
+    [Parameter] public string BusinessID { get; set; }
+    [Inject] private StateService StateService { get; set; }
+    [Inject] private ConfigService ConfigService { get; set; }
+
+    private BusinessConfig BusinessConfig => ConfigService.GetBusinessConfig(BusinessID);
+    private BusinessState BusinessState => StateService.Businesses[BusinessID];
+    private bool IsUnlocked => BusinessState.Amount > 0;
+    private double UnlockCost => ConfigService.GetBusinessConfig(BusinessID).InitialCost;
+    private string UnlockCostString => MoneyUtil.MoneyToString(UnlockCost);
+    private string ProfitText => MoneyUtil.MoneyToString(BusinessState.Amount * ConfigService.GetBusinessConfig(BusinessID).InitialRevenue);
+    private string UpgradeCostString => MoneyUtil.MoneyToString(CalculateUpgradeCost());
+    private bool ShowManagerPopup { get; set; }
+    private string ManagerID => ConfigService.GetManagerIDForBusiness(BusinessID);
+    private bool IsManagerHired => StateService.Managers.ContainsKey(ManagerID) && StateService.Managers[ManagerID].IsUnlocked;
+    private System.Timers.Timer _timer;
+
+    protected override void OnInitialized()
+    {
+        _timer = new System.Timers.Timer(500); // Update every half second
+        _timer.Elapsed += OnTimerElapsed;
+        _timer.Start();
+    }
+
+    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        InvokeAsync(() =>
+        {
+            StateService.CheckAndCompleteWork();
+            StateHasChanged();
+        });
+    }
+
+    private void UnlockBusiness()
+    {
+        if (StateService.Wallet.Money >= UnlockCost)
+        {
+            StateService.SubtractMoney(UnlockCost);
+            StateService.UnlockBusiness(BusinessID);
+        }
+    }
+
+    private void UpgradeBusiness()
+    {
+        var cost = CalculateUpgradeCost();
+        if (StateService.Wallet.Money >= cost)
+        {
+            StateService.SubtractMoney(cost);
+            StateService.UpgradeBusiness(BusinessID, 1);
+        }
+    }
+
+    private double CalculateUpgradeCost()
+    {
+        var amount = BusinessState.Amount;
+        var initialCost = ConfigService.GetBusinessConfig(BusinessID).InitialCost;
+        var coefficient = ConfigService.GetBusinessConfig(BusinessID).Coefficient;
+        return initialCost * Math.Pow(coefficient, amount);
+    }
+
+    private void StartWork()
+    {
+        StateService.StartWork(BusinessID);
+    }
+
+    private string RemainingTimeString
+    {
+        get {
+            if (BusinessState.IsWorking)
+            {
+                var remainingTime = (BusinessState.WorkTimestamp - DateTime.Now.Ticks) / TimeSpan.TicksPerSecond;
+                return TimeUtil.SecondsToString(remainingTime);
+            }
+            else
+            {
+                var timeToProfit = ConfigService.GetTimeToProfit(BusinessID, BusinessState.Amount);
+                return TimeUtil.SecondsToString(timeToProfit);
+            }
+        }
+    }
+
+    private double ProgressPercentage
+    {
+        get {
+            if (BusinessState.IsWorking)
+            {
+                var totalTime = (BusinessState.WorkTimestamp - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
+                if (totalTime == 0)
+                    return 0; // Avoid division by zero
+                var elapsedTime = (DateTime.Now.Ticks - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
+                return (elapsedTime / totalTime) * 100;
+            }
+            return 0;
+        }
+    }
+
+    private double AmountProgressPercentage
+    {
+        get {
+            var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
+            return ((double)BusinessState.Amount / nextMilestone) * 100;
+        }
+    }
+
+    private string AmountProgressString
+    {
+        get {
+            var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
+            return $"{BusinessState.Amount}/{nextMilestone}";
+        }
+    }
+
+    private void OpenManagerPopup()
+    {
+        ShowManagerPopup = true;
+    }
+
+    private void CloseManagerPopup()
+    {
+        ShowManagerPopup = false;
+    }
+
+    private void OnHireManager()
+    {
+        StateService.HireManager(ManagerID);
+        ShowManagerPopup = false;
+        StartWork(); // Ensure the business starts working if it's not already
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}

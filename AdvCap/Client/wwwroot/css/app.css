@@ -39,3 +39,33 @@ h1:focus {
     top: 50%;
     transform: translateY(-50%);
 }
+.circular-chart {
+    max-width: 100px; /* Adjust this to make it smaller */
+    max-height: 100px; /* Adjust this to make it smaller */
+}
+
+    .circular-chart.small .circle-bg {
+        fill: none;
+        stroke: #eee;
+        stroke-width: 3.8;
+    }
+
+    .circular-chart.small .circle {
+        fill: none;
+        stroke-width: 2.8;
+        stroke-linecap: round;
+        stroke: #3e98c7;
+        animation: progress 1s ease-out forwards;
+    }
+
+    .circular-chart.small .percentage {
+        fill: #666;
+        font-size: 0.3em;
+        text-anchor: middle;
+    }
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}
