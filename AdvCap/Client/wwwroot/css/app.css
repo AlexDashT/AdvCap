@@ -30,15 +30,46 @@ h1:focus {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+.progress {   
+    border-radius: .925rem !important;
+    height: 50px !important;
+}
+.custom-progress {
+    height: 50px; /* Adjust the height of the progress bar */
+    background-color: black !important; /* Background color */
+}
+
+.custom-progress-bar {
+    background-color: #9cd651 !important; /* Progress bar color */
+    transition: width 0.1s linear !important;
+}
+
 .progress-bar-text {
     position: absolute;
     width: 100%;
     text-align: center;
-    color: #fff;
-    font-weight: bold;
+    color: white; /* Adjust text color for better readability */
     top: 50%;
     transform: translateY(-50%);
 }
+
+
+
+
+.locked-business {
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+.unlockable-business {
+    background-color: #d4edda; /* Light green background color for unlockable businesses */
+    color: #155724; /* Dark green text color */
+    cursor: pointer;
+}
+
+
+
 .circular-chart {
     max-width: 100px; /* Adjust this to make it smaller */
     max-height: 100px; /* Adjust this to make it smaller */
@@ -69,3 +100,26 @@ h1:focus {
         stroke-dasharray: 0 100;
     }
 }
+
+
+
+
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.row {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+    .row .col-3, .row .col-9 {
+        padding-right: 0;
+        padding-left: 0;
+    }
+

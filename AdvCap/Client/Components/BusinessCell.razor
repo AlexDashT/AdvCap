@@ -1,4 +1,6 @@
 ﻿@page "/businesscell"
+@namespace AdvCap.Client.Components
+
 <div class="card mb-3">
     <div class="card-body">
         @if (IsUnlocked)
@@ -8,43 +10,41 @@
                     <img src="@BusinessConfig.Image" @onclick="StartWork" class="img-fluid" />
                     <div>@BusinessConfig.Name</div>
                 </div>
-                <div class="col-6">
-                    <!-- Empty column to center align the progress bar -->
-                </div>
-                <div class="col-3">
-                    <div class="progress position-relative">
-                        <div class="progress-bar" role="progressbar" style="width: @ProgressPercentage%;" aria-valuenow="@ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
-                            <span class="progress-bar-text">@ProfitText</span>
+                <div class="col-9">
+                    <div class="progress-container">
+                        <div class="progress position-relative w-100 custom-progress">
+                            <div class="progress-bar custom-progress-bar" role="progressbar" style="width: @ProgressPercentage%;" aria-valuenow="@ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                                <span class="progress-bar-text">@ProfitText</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row align-items-center mt-3">
-                <div class="col-6">
+                <div class="col-3">
                     <CircularProgressBar Progress="@AmountProgressPercentage" DisplayText="@AmountProgressString" />
                 </div>
-                <div class="col-6 text-end">
-                    <div class="btn-group">
-                        <button class="btn btn-primary mt-2" @onclick="UpgradeBusiness">BUY @UpgradeCostString</button>
+                <div class="col-9">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-primary mt-2 flex-grow-1 me-2" @onclick="UpgradeBusiness">BUY @UpgradeCostString</button>
                         @if (!IsManagerHired)
                         {
-                            <button class="btn btn-success mt-2 ms-2" @onclick="OpenManagerPopup">Hire Manager</button>
+                            <button class="btn btn-success mt-2 me-2" @onclick="OpenManagerPopup">Hire Manager</button>
                         }
-                        <div class="btn btn-secondary mt-2 ms-2" disabled>@RemainingTimeString</div>
+                        <div class="btn btn-secondary mt-2" style="flex-shrink: 0;" disabled>@RemainingTimeString</div>
                     </div>
                 </div>
             </div>
         }
         else
         {
-            <div class="row align-items-center">
+            <div class="row align-items-center @GetUnlockRowClass()" @onclick="UnlockBusiness" style="cursor: pointer;">
                 <div class="col-3 text-center">
                     <img src="@BusinessConfig.Image" class="img-fluid" />
                     <div>@BusinessConfig.Name</div>
                 </div>
                 <div class="col-9">
                     <div>Cost: @UnlockCostString</div>
-                    <button class="btn btn-primary mt-2" @onclick="UnlockBusiness">Unlock</button>
                 </div>
             </div>
         }
