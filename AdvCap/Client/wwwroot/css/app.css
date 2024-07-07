@@ -31,43 +31,6 @@ h1:focus {
         content: "An error has occurred."
     }
 
-.progress {   
-    border-radius: .925rem !important;
-    height: 50px !important;
-}
-.custom-progress {
-    height: 50px; /* Adjust the height of the progress bar */
-    background-color: black !important; /* Background color */
-}
-
-.custom-progress-bar {
-    background-color: #9cd651 !important; /* Progress bar color */
-    transition: width 0.1s linear !important;
-}
-
-.progress-bar-text {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-    color: white; /* Adjust text color for better readability */
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-
-
-
-.locked-business {
-    background-color: #f8f9fa;
-    color: #6c757d;
-}
-
-.unlockable-business {
-    background-color: #d4edda; /* Light green background color for unlockable businesses */
-    color: #155724; /* Dark green text color */
-    cursor: pointer;
-}
-
 
 
 .circular-chart {
@@ -102,6 +65,27 @@ h1:focus {
 }
 
 
+/* Ensure wrapper div maintains fixed width */
+#wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 375px; /* Set width to a typical mobile width */
+    margin: 0 auto;
+    padding: 10px;
+    width: 100%;
+}
+
+/* Ensure the app content takes the full width of the wrapper */
+#app {
+    width: 100%;
+}
+
+body {
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+
 
 
 
@@ -119,7 +103,36 @@ h1:focus {
 }
 
     .row .col-3, .row .col-9 {
-        padding-right: 0;
+        padding-right: 3px;
         padding-left: 0;
     }
 
+.logo-image {
+    height: 100px; /* Adjust the height as needed */
+    vertical-align: middle;
+}
+
+h1 {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    font-size: large !important;
+}
+
+/* Ensure the bottom navigation bar stays fixed at the bottom */
+.navbar {
+    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 10px 0;
+}
+
+.nav-link {
+    color: #333;
+    font-size: 1.2em;
+}
+
+    .nav-link.active {
+        color: #007bff;
+        font-weight: bold;
+    }

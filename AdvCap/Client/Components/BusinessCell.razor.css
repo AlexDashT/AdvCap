@@ -1,0 +1,86 @@
+﻿.card {
+    border-radius: 1rem !important;
+    margin-bottom: 0px !important;
+    /* More curvature for card corners */
+}
+
+.unlocked-business-card {
+    background-color: gold !important;
+}
+
+.locked-business-card {
+    background-color: darkgray !important;
+}
+
+.progress {
+    border-radius: .925rem !important;
+    height: 31px !important;
+}
+
+.custom-progress {
+    height: 50px; /* Adjust the height of the progress bar */
+    background-color: black !important; /* Background color */
+}
+
+.custom-progress-bar {
+    background-color: #9cd651 !important; /* Progress bar color */
+    transition: width 0.1s linear; /* Smooth transition for width changes */
+}
+
+.amount-progress {
+    height: 37px !important; /* Adjust the height of the amount progress bar */
+    background-color: black !important; /* Background color */
+    width: 79px !important; /* Set the width to 140px */
+}
+
+.amount-progress-bar {
+    background-color: #4caf50 !important; /* Progress bar color */
+    transition: width 0.1s linear; /* Smooth transition for width changes */
+}
+
+.amount-progress-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white; /* Adjust text color for better readability */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.progress-bar-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white; /* Adjust text color for better readability */
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.business-image {
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+
+    .business-image:hover {
+        transform: scale(1.1); /* Slightly enlarge the image on hover */
+    }
+
+.working-business {
+    border: 3px solid #9cd651; /* Green border when working */
+}
+
+.idle-business {
+    border: 3px solid #6c757d; /* Gray border when idle */
+}
+/* Custom styles for the BUY button */
+.btn-buy {
+    background-color: goldenrod !important;
+    border-color: goldenrod !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+    .btn-buy:hover {
+        background-color: #daa520 !important;
+        border-color: #daa520 !important;
+    }

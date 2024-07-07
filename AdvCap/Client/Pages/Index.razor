@@ -7,15 +7,22 @@
 
 @implements IDisposable
 
-<div>
-    <h1>Adventure Capitalist</h1>
-    <div>Money: @StateService.Wallet.MoneyString</div>
-    <div>
-        @foreach (var businessID in ConfigService.Businesses.Keys)
-        {
-            <BusinessCell BusinessID="@businessID" />
-        }
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <img src="assets/logo.webp" alt="Logo" class="logo-image" />
+        <h1 class="d-inline-block ms-2">Adventure Cryptoist</h1>
+        <h1 class="d-inline-block ms-2">@StateService.Wallet.MoneyString</h1>
     </div>
+
+    <div class="row">
+            @foreach (var businessID in ConfigService.GetBusinessIDs())
+            {
+                <div class="col-12 mb-3">
+                    <BusinessCell BusinessID="@businessID" />
+                </div>
+            }
+        </div>
+    
 </div>
 <OfflineEarningsPopup OnCollect="@HandleCollectEarnings" />
 

@@ -72,7 +72,8 @@ namespace AdvCap.Client.Components
 
         private string RemainingTimeString
         {
-            get {
+            get
+            {
                 if (BusinessState.IsWorking)
                 {
                     var remainingTime = (BusinessState.WorkTimestamp - DateTime.Now.Ticks) / TimeSpan.TicksPerSecond;
@@ -88,12 +89,12 @@ namespace AdvCap.Client.Components
 
         private double ProgressPercentage
         {
-            get {
+            get
+            {
                 if (BusinessState.IsWorking)
                 {
                     var totalTime = (BusinessState.WorkTimestamp - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
-                    if (totalTime == 0)
-                        return 0; // Avoid division by zero
+                    if (totalTime == 0) return 0; // Avoid division by zero
                     var elapsedTime = (DateTime.Now.Ticks - BusinessState.StartTime.Ticks) / TimeSpan.TicksPerSecond;
                     return (elapsedTime / totalTime) * 100;
                 }
@@ -103,7 +104,8 @@ namespace AdvCap.Client.Components
 
         private double AmountProgressPercentage
         {
-            get {
+            get
+            {
                 var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
                 return ((double)BusinessState.Amount / nextMilestone) * 100;
             }
@@ -111,7 +113,8 @@ namespace AdvCap.Client.Components
 
         private string AmountProgressString
         {
-            get {
+            get
+            {
                 var nextMilestone = ConfigService.GetNextMilestone(BusinessID, BusinessState.Amount);
                 return $"{BusinessState.Amount}/{nextMilestone}";
             }
@@ -134,9 +137,16 @@ namespace AdvCap.Client.Components
             StartWork(); // Ensure the business starts working if it's not already
         }
 
-        private string GetUnlockRowClass()
+        private string GetCardClass()
         {
-            return StateService.Wallet.Money >= UnlockCost ? "unlockable-business" : "locked-business";
+            return IsUnlocked || StateService.Wallet.Money >= UnlockCost ? "unlocked-business-card" : "locked-business-card";
+        }
+
+        private string GetImageClass()
+        {
+            if (BusinessState.IsWorking)
+                return "working-business";
+            return "idle-business";
         }
 
         public void Dispose()

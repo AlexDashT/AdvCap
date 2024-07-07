@@ -35,16 +35,16 @@ public class ConfigService
     {
         Businesses = new Dictionary<string, BusinessConfig>
         {
-            { "business-0", new BusinessConfig { Name = "Lemonade Stand", Image = "assets/business/Lemonade_Stand.png", AutoUnlocked = true, InitialCost = 3.738, Coefficient = 1.07, InitialTime = 0.6, InitialRevenue = 1 } },
-            { "business-1", new BusinessConfig { Name = "Newspaper Delivery", Image = "assets/business/Newspaper_Delivery.png", InitialCost = 60, Coefficient = 1.15, InitialTime = 3, InitialRevenue = 60 } },
-            { "business-2", new BusinessConfig { Name = "Car Wash", Image = "assets/business/Car_Wash.png", InitialCost = 720, Coefficient = 1.14, InitialTime = 6, InitialRevenue = 540 } },
-            { "business-3", new BusinessConfig { Name = "Pizza Delivery", Image = "assets/business/Pizza_Delivery.png", InitialCost = 8640, Coefficient = 1.13, InitialTime = 12, InitialRevenue = 4320 } },
-            { "business-4", new BusinessConfig { Name = "Donut Shop", Image = "assets/business/Donut_Shop.png", InitialCost = 103680, Coefficient = 1.12, InitialTime = 24, InitialRevenue = 51840 } },
-            { "business-5", new BusinessConfig { Name = "Shrimp Boat", Image = "assets/business/Shrimp_Boat.png", InitialCost = 1244160, Coefficient = 1.11, InitialTime = 96, InitialRevenue = 622080 } },
-            { "business-6", new BusinessConfig { Name = "Hockey Team", Image = "assets/business/Hockey_Team.png", InitialCost = 14929920, Coefficient = 1.10, InitialTime = 384, InitialRevenue = 7464960 } },
-            { "business-7", new BusinessConfig { Name = "Movie Studio", Image = "assets/business/Movie_Studio.png", InitialCost = 179159040, Coefficient = 1.09, InitialTime = 1536, InitialRevenue = 89579520 } },
-            { "business-8", new BusinessConfig { Name = "Bank", Image = "assets/business/Bank.png", InitialCost = 2149908480, Coefficient = 1.08, InitialTime = 6144, InitialRevenue = 1074954240 } },
-            { "business-9", new BusinessConfig { Name = "Oil Company", Image = "assets/business/Oil_Company.png", InitialCost = 25798901760, Coefficient = 1.07, InitialTime = 36864, InitialRevenue = 29668737024 } }
+            { "business-0", new BusinessConfig { Name = "Bitcoin Mining Farm", Image = "assets/business/BitcoinMiningFarm.webp", AutoUnlocked = true, InitialCost = 3.738, Coefficient = 1.07, InitialTime = 0.6, InitialRevenue = 1 } },
+            { "business-1", new BusinessConfig { Name = "Ethereum Staking Pool", Image = "assets/business/EthereumStakingPool.webp", InitialCost = 60, Coefficient = 1.15, InitialTime = 3, InitialRevenue = 60 } },
+            { "business-2", new BusinessConfig { Name = "Crypto Exchange Platform", Image = "assets/business/CryptoExchangePlatform.webp", InitialCost = 720, Coefficient = 1.14, InitialTime = 6, InitialRevenue = 540 } },
+            { "business-3", new BusinessConfig { Name = "NFT Marketplace", Image = "assets/business/NFTMarketplace.webp", InitialCost = 8640, Coefficient = 1.13, InitialTime = 12, InitialRevenue = 4320 } },
+            { "business-4", new BusinessConfig { Name = "DeFi Lending Platform", Image = "assets/business/DeFiLendingPlatform.webp", InitialCost = 103680, Coefficient = 1.12, InitialTime = 24, InitialRevenue = 51840 } },
+            { "business-5", new BusinessConfig { Name = "Altcoin Mining Operations", Image = "assets/business/AltcoinMiningOperations.webp", InitialCost = 1244160, Coefficient = 1.11, InitialTime = 96, InitialRevenue = 622080 } },
+            { "business-6", new BusinessConfig { Name = "Blockchain Development Firm", Image = "assets/business/BlockchainDevelopmentFirm.webp", InitialCost = 14929920, Coefficient = 1.10, InitialTime = 384, InitialRevenue = 7464960 } },
+            { "business-7", new BusinessConfig { Name = "Crypto Payment Gateway", Image = "assets/business/CryptoPaymentGateway.webp", InitialCost = 179159040, Coefficient = 1.09, InitialTime = 1536, InitialRevenue = 89579520 } },
+            { "business-8", new BusinessConfig { Name = "Crypto News and Analytics Platform", Image = "assets/business/CryptoNewsandAnalyticsPlatform.webp", InitialCost = 2149908480, Coefficient = 1.08, InitialTime = 6144, InitialRevenue = 1074954240 } },
+            { "business-9", new BusinessConfig { Name = "Crypto Educational Platform", Image = "assets/business/CryptoEducationalPlatform.webp", InitialCost = 25798901760, Coefficient = 1.07, InitialTime = 36864, InitialRevenue = 29668737024 } }
         };
 
         Managers = new Dictionary<string, ManagerConfig>

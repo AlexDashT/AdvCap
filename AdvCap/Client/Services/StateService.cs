@@ -42,7 +42,7 @@ public class StateService
         _jsRuntime = jsRuntime;
         Businesses = new Dictionary<string, BusinessState>();
         Managers = new Dictionary<string, ManagerState>();
-        Wallet = new WalletState { Money = 100000000000 };
+        Wallet = new WalletState { Money = 0 };
         _instance = this;
     }
 
