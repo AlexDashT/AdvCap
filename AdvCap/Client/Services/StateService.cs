@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Timers;
 
 public class BusinessState
 {
@@ -23,12 +24,13 @@ public class WalletState
     public string MoneyString => MoneyUtil.MoneyToString(Money);
 }
 
-public class StateService
+public class StateService : IDisposable
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly ConfigService _configService;
     public event Action OnChange;
     private static StateService _instance;
+    private System.Timers.Timer _timer;
 
     public Dictionary<string, BusinessState> Businesses { get; private set; }
     public Dictionary<string, ManagerState> Managers { get; private set; }
@@ -44,6 +46,10 @@ public class StateService
         Managers = new Dictionary<string, ManagerState>();
         Wallet = new WalletState { Money = 0 };
         _instance = this;
+
+        _timer = new System.Timers.Timer(1000);
+        _timer.Elapsed += (sender, args) => CheckAndCompleteWork();
+        _timer.Start();
     }
 
     public async Task InitializeAsync()
@@ -53,7 +59,6 @@ public class StateService
         UnlockInitialBusinesses();
         UnlockInitialManagers();
         await LoadStateAsync();
-        
     }
 
     private void InitializeBusinesses()
@@ -101,6 +106,7 @@ public class StateService
         var json = JsonSerializer.Serialize(state);
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "gameState", json);
     }
+
     [JSInvokable]
     public static async Task SaveStateOnExit()
     {
@@ -226,19 +232,44 @@ public class StateService
         }
     }
 
+    public bool HasHireableManager()
+    {
+        foreach (var managerID in _configService.GetManagerIDs())
+        {
+            if (CanHireManager(managerID))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool CanHireManager(string managerID)
+    {
+        if (!Managers.ContainsKey(managerID))
+            return false;
+
+        var managerConfig = _configService.GetManagerConfig(managerID);
+        return Wallet.Money >= managerConfig.Cost && !Managers[managerID].IsUnlocked;
+    }
     public void HireManager(string managerID)
     {
-        if (Managers.ContainsKey(managerID) && Wallet.Money >= _configService.GetManagerConfig(managerID).Cost)
-        {
-            SubtractMoney(_configService.GetManagerConfig(managerID).Cost);
-            UnlockManager(managerID);
+        if (!Managers.ContainsKey(managerID))
+            return;
 
-            var businessID = _configService.GetManagerConfig(managerID).BusinessID;
-            var business = Businesses[businessID];
-            if (!business.IsWorking)
+        var managerConfig = _configService.GetManagerConfig(managerID);
+        if (Wallet.Money >= managerConfig.Cost && !Managers[managerID].IsUnlocked)
+        {
+            SubtractMoney(managerConfig.Cost);
+            Managers[managerID].IsUnlocked = true;
+
+            var businessID = managerConfig.BusinessID;
+            if (!Businesses[businessID].IsWorking)
             {
                 StartWork(businessID);
             }
+
+            NotifyStateChanged();
         }
     }
 
@@ -296,4 +327,9 @@ public class StateService
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
 }

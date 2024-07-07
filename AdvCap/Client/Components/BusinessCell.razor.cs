@@ -4,7 +4,7 @@ using System.Timers;
 
 namespace AdvCap.Client.Components
 {
-    public partial class BusinessCell : IDisposable
+    public partial class BusinessCell : ComponentBase, IDisposable
     {
         [Parameter] public string BusinessID { get; set; }
         [Inject] private StateService StateService { get; set; }
@@ -119,24 +119,6 @@ namespace AdvCap.Client.Components
                 return $"{BusinessState.Amount}/{nextMilestone}";
             }
         }
-
-        private void OpenManagerPopup()
-        {
-            ShowManagerPopup = true;
-        }
-
-        private void CloseManagerPopup()
-        {
-            ShowManagerPopup = false;
-        }
-
-        private void OnHireManager()
-        {
-            StateService.HireManager(ManagerID);
-            ShowManagerPopup = false;
-            StartWork(); // Ensure the business starts working if it's not already
-        }
-
         private string GetCardClass()
         {
             return IsUnlocked || StateService.Wallet.Money >= UnlockCost ? "unlocked-business-card" : "locked-business-card";

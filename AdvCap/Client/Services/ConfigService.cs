@@ -151,4 +151,8 @@ public class ConfigService
     {
         return new List<string>(Businesses.Keys);
     }
+    public IEnumerable<string> GetManagerIDs()
+    {
+        return Managers.Keys;
+    }
 }

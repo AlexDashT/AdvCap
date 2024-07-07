@@ -1,0 +1,42 @@
+﻿@page "/managers"
+@inject StateService StateService
+@inject ConfigService ConfigService
+
+<h3>Managers</h3>
+<div class="container mt-4">
+    @foreach (var managerID in ConfigService.GetManagerIDs())
+    {
+        var managerConfig = ConfigService.GetManagerConfig(managerID);
+        if (!StateService.Managers[managerID].IsUnlocked)
+        {
+            var canNotHire = !StateService.CanHireManager(managerID);
+            <div class="row mb-3 p-3 border rounded" style="background-color: #1f1f1f; color: #ffffff;">
+                <div class="col-8">
+                    <h5>@managerConfig.Name</h5>
+                    <p>Business: @ConfigService.GetBusinessConfig(managerConfig.BusinessID).Name</p>
+                    <p>Cost: @MoneyUtil.MoneyToString(managerConfig.Cost)</p>
+                </div>
+                <div class="col-4 text-end">
+                    <button class="btn btn-primary" @onclick="() => HireManager(managerID)" disabled="@canNotHire">Hire</button>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private void HireManager(string managerID)
+    {
+        StateService.HireManager(managerID);
+    }
+
+    protected override void OnInitialized()
+    {
+        StateService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        StateService.OnChange -= StateHasChanged;
+    }
+}

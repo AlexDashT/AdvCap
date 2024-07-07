@@ -64,34 +64,45 @@ h1:focus {
     }
 }
 
+body, html {
+    height: 100%;
+    margin: 0;
+    background-color: #121212; /* Dark background color for the app */
+    color: #ffffff; /* Light text color for contrast */
+}
 
-/* Ensure wrapper div maintains fixed width */
-#wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 375px; /* Set width to a typical mobile width */
+.app-wrapper {
+    max-width: 420px; /* Width similar to mobile devices */
+    margin: 0 auto; /* Center the content horizontally */
+    padding: 10px; /* Optional padding */
+    padding-bottom: 70px; /* Adjust padding to leave space for the navbar */
+    box-sizing: border-box; /* Ensure padding is included in the height */
+    background-color: #121212; /* Dark background color for the app wrapper */
+}
+
+.navbar.fixed-bottom {
+    max-width: 420px; /* Ensure the navbar has the same width as the app */
     margin: 0 auto;
-    padding: 10px;
+    position: fixed;
+    bottom: 0;
     width: 100%;
+    background-color: #1f1f1f; /* Dark background color for the navbar */
+    color: #ffffff; /* Light text color for contrast */
 }
 
-/* Ensure the app content takes the full width of the wrapper */
-#app {
-    width: 100%;
-}
+    .navbar.fixed-bottom .nav-link {
+        flex-grow: 1; /* Ensure buttons evenly space themselves */
+        text-align: center; /* Center the text within the buttons */
+        padding: 5px 0; /* Adjust padding to make buttons smaller */
+        font-size: 0.8rem; /* Adjust font size to make buttons smaller */
+        color: #ffffff; /* Light text color for the buttons */
+    }
 
-body {
-    overflow-x: hidden; /* Prevent horizontal scroll */
-}
+        .navbar.fixed-bottom .nav-link:hover {
+            background-color: #333333; /* Slightly lighter background color on hover */
+            color: #ffffff; /* Ensure text color remains light on hover */
+        }
 
-
-
-
-
-.bg-light {
-    background-color: #f8f9fa !important;
-}
 
 .text-muted {
     color: #6c757d !important;

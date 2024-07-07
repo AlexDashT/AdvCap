@@ -1,10 +1,21 @@
 ﻿@namespace AdvCap.Client.Components
+@inject StateService StateService
 
-<nav class="navbar fixed-bottom navbar-light bg-light">
-    <div class="container-fluid justify-content-around">
-        <NavLink class="nav-link" href="/">Home</NavLink>
-        <NavLink class="nav-link" href="/managers">Managers</NavLink>
-        <NavLink class="nav-link" href="/upgrades">Upgrades</NavLink>
-        <NavLink class="nav-link" href="/settings">Settings</NavLink>
+<nav class="navbar fixed-bottom">
+    <div class="container-fluid justify-content-around p-0">
+        <button class="btn btn-link nav-link" @onclick='() => SetActiveTab("Home")'>Home</button>
+        <button class="btn btn-link nav-link @(StateService.HasHireableManager() ? "blink" : "")" @onclick='() => SetActiveTab("Managers")'>Managers</button>
+        <button class="btn btn-link nav-link" @onclick='() => SetActiveTab("Upgrades")'>Upgrades</button>
+        <button class="btn btn-link nav-link" @onclick='() => SetActiveTab("Settings")'>Settings</button>
     </div>
 </nav>
+
+@code {
+    [Parameter] public EventCallback<string> OnTabChange { get; set; }
+
+    private async Task SetActiveTab(string tab)
+    {
+        Console.WriteLine($"Tab changed to: {tab}"); // Log to console
+        await OnTabChange.InvokeAsync(tab);
+    }
+}

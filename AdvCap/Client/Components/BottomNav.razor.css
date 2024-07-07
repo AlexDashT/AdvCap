@@ -2,3 +2,24 @@
 .navbar {
     box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
 }
+
+.bottom-nav {
+    margin-top: 20px;
+}
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.blink {
+    animation: blink 1s infinite;
+}

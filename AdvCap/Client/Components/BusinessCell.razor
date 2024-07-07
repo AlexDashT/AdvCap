@@ -31,10 +31,6 @@
                 <div class="col-9">
                     <div class="d-flex align-items-center">
                         <button class="btn btn-buy mt-2 flex-grow-1 me-2" @onclick="UpgradeBusiness">BUY @UpgradeCostString</button>
-                        @if (!IsManagerHired)
-                        {
-                            <button class="btn btn-success mt-2 me-2" @onclick="OpenManagerPopup">Hire Manager</button>
-                        }
                         <div class="btn btn-secondary mt-2" style="flex-shrink: 0;" disabled>@RemainingTimeString</div>
                     </div>
                 </div>
@@ -54,8 +50,3 @@
         }
     </div>
 </div>
-
-@if (ShowManagerPopup)
-{
-    <ManagerPopup ManagerID="@ManagerID" OnHire="OnHireManager" OnClose="CloseManagerPopup" />
-}

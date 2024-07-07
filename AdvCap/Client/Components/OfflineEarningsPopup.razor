@@ -11,16 +11,16 @@
 
 @if (StateService.OfflineEarnings > 0)
 {
-    <div class="modal" style="display:block; background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal" style="display:block; background-color: rgba(0, 0, 0, 0.8);">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content text-white bg-dark">
+                <div class="modal-header border-bottom border-secondary">
                     <h5 class="modal-title">Offline Earnings</h5>
                 </div>
                 <div class="modal-body">
                     <p>You earned @MoneyUtil.MoneyToString(StateService.OfflineEarnings) while you were away!</p>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer border-top border-secondary">
                     <button class="btn btn-primary" @onclick="CollectEarnings">Collect</button>
                 </div>
             </div>

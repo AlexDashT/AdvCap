@@ -4,7 +4,6 @@
 @inject StateService StateService
 @inject IJSRuntime JSRuntime
 
-
 @implements IDisposable
 
 <div class="container mt-4">
@@ -14,7 +13,9 @@
         <h1 class="d-inline-block ms-2">@StateService.Wallet.MoneyString</h1>
     </div>
 
-    <div class="row">
+    @if (activeTab == "Home")
+    {
+        <div class="row">
             @foreach (var businessID in ConfigService.GetBusinessIDs())
             {
                 <div class="col-12 mb-3">
@@ -22,11 +23,26 @@
                 </div>
             }
         </div>
-    
+    }
+    else if (activeTab == "Managers")
+    {
+        <Managers />
+    }
+    else if (activeTab == "Upgrades")
+    {
+        <Upgrades />
+    }
+    else if (activeTab == "Settings")
+    {
+        <Settings />
+    }
+
+    <BottomNav OnTabChange="HandleTabChange" />
+    <OfflineEarningsPopup OnCollect="@HandleCollectEarnings" />
 </div>
-<OfflineEarningsPopup OnCollect="@HandleCollectEarnings" />
 
 @code {
+    private string activeTab = "Home";
     private bool initialized = false;
 
     protected override async Task OnInitializedAsync()
@@ -36,13 +52,20 @@
         await JSRuntime.InvokeVoidAsync("eval", "window.addEventListener('beforeunload', function(event) { DotNet.invokeMethodAsync('AdvCap.Client', 'SaveStateOnExit'); });");
         StateService.OnChange += StateHasChanged;
     }
+
+    private void HandleTabChange(string tab)
+    {
+        Console.WriteLine($"activeTab changed to: {activeTab}"); // Log to console
+        activeTab = tab;
+        StateHasChanged(); // Ensure the component re-renders
+    }
+
     private async Task HandleCollectEarnings()
     {
         await StateService.CollectOfflineEarningsAsync();
         StateHasChanged();
     }
 
-    
     public void Dispose()
     {
         StateService.OnChange -= StateHasChanged;
